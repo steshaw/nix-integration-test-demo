@@ -1,0 +1,5 @@
+= Nix integration test demo
+Steven Shaw <steven@steshaw.org>
+2021-09-08
+
+Walkthrough of https://www.haskellforall.com/2020/11/how-to-use-nixos-for-lightweight.html[How to use NixOS for lightweight integration tests].

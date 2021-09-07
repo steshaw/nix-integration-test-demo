@@ -44,7 +44,7 @@ let
             grant usage on schema ${schema} to ${webRole};
             grant select on ${schema}.${table} to ${webRole};
 
-            create role ${username} noinherit login password '${password}';
+            create role ${username} inherit login password '${password}';
             grant ${webRole} to ${username};
           '';
         };
