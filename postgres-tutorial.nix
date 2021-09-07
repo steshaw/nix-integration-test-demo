@@ -8,20 +8,22 @@ let
     };
 
   # Single source of truth for all tutorial constants
-  database = "postgres";
-  schema   = "api";
-  table    = "todos";
-  username = "authenticator";
-  password = "mysecretpassword";
-  webRole  = "web_anon";
+  database      = "postgres";
+  schema        = "api";
+  table         = "todos";
+  username      = "authenticator";
+  password      = "mysecretpassword";
+  webRole       = "web_anon";
+  postgrestPort = 3000;
 
-  nixos =
-    import "${nixpkgs}/nixos" {
-      system = "x86_64-linux";
+in
+  import "${nixpkgs}/nixos/tests/make-test-python.nix" ({ pkgs, ...}: {
+    system = "x86_64-linux";
 
-      configuration = { config, pkgs, ... }: {
+    nodes = {
+      server = { config, pkgs, ... }: {
         # Open the default port for `postgrest` in the firewall
-        networking.firewall.allowedTCPPorts = [ 3000 ];
+        networking.firewall.allowedTCPPorts = [ postgrestPort ];
 
         services.postgresql = {
           enable = true;
@@ -87,7 +89,31 @@ let
         # Uncomment the next line for running QEMU on a non-graphical system
         virtualisation.graphics = false;
       };
+
+      client = { };
     };
 
-in
-  nixos.vm
+    testScript =
+      ''
+      import json
+      import sys
+
+      start_all()
+
+      server.wait_for_open_port(${toString postgrestPort})
+
+      expected = [
+          {"id": 1, "done": False, "task": "finish tutorial 0", "due": None},
+          {"id": 2, "done": False, "task": "pat self on back", "due": None},
+      ]
+
+      actual = json.loads(
+          client.succeed(
+              "${pkgs.curl}/bin/curl http://server:${toString postgrestPort}/${table}"
+          )
+      )
+
+      if expected != actual:
+          sys.exit(1)
+      '';
+  })
