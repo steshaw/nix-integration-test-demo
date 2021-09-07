@@ -85,7 +85,7 @@ let
         };
 
         # Uncomment the next line for running QEMU on a non-graphical system
-        # virtualisation.graphics = false;
+        virtualisation.graphics = false;
       };
     };
 
